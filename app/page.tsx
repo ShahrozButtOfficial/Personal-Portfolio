@@ -31,8 +31,7 @@ const fadeUp = (distance = 24, delay = 0) => ({
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
-, delay },
+    transition: { duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1), delay },
   },
 })
 
@@ -45,8 +44,7 @@ const staggerChildren = (stagger = 0.06, delayChildren = 0.1) => ({
 
 const fadeIn = (delay = 0) => ({
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
-, delay } },
+  visible: { opacity: 1, transition: { duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1), delay } },
 })
 
 function useActiveSection(ids: SectionId[]) {
@@ -75,10 +73,12 @@ function AnimatedText({
   text,
   className,
   per = "word",
+  viewportAmount = 0.3
 }: {
   text: string
   className?: string
   per?: "word" | "char"
+  viewportAmount?: number
 }) {
   const shouldReduce = useReducedMotion()
   const parts = per === "char" ? Array.from(text) : text.split(" ")
@@ -87,8 +87,8 @@ function AnimatedText({
       variants={staggerChildren(0.04, 0)}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: false, amount: 0.6 }}
-      className={className}
+      viewport={{ once: false, amount: viewportAmount }}
+      className={`inline-block ${className}`}
     >
       {parts.map((p, i) => (
         <motion.span
@@ -98,8 +98,7 @@ function AnimatedText({
               ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
               : { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }
           }
-          transition={{ duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
+          transition={{ duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
           className="inline-block"
         >
           {p}
@@ -120,7 +119,7 @@ function Section({
   className?: string
 }) {
   return (
-    <section id={id} className={`scroll-mt-24 px-6 md:px-10 lg:px-16 ${className || ""}`}>
+    <section id={id} className={`scroll-mt-20 px-4 sm:px-6 md:px-10 lg:px-16 ${className || ""}`}>
       {children}
     </section>
   )
@@ -190,63 +189,200 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
   )
 }
 
+function MobileMenu({ active, onJump, isOpen, onClose }: { 
+  active: SectionId; 
+  onJump: (id: SectionId) => void;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+            onClick={onClose}
+          />
+          
+          {/* Menu */}
+          <motion.nav
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+            className="fixed right-0 top-0 z-50 h-full w-64 border-l border-border bg-background/95 backdrop-blur-lg md:hidden"
+          >
+            <div className="flex flex-col p-6">
+              <div className="mb-8 flex items-center justify-between">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    onJump("home")
+                    onClose()
+                  }}
+                  className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 text-lg tracking-tight"
+                >
+                  {"< SB . DEV >"}
+                </motion.button>
+                <button
+                  onClick={onClose}
+                  className="rounded-md p-2 text-muted-foreground hover:text-foreground"
+                  aria-label="Close menu"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {sections.map((s) => {
+                  const isActive = active === s.id
+                  return (
+                    <motion.button
+                      key={s.id}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        onJump(s.id)
+                        onClose()
+                      }}
+                      className={`block w-full rounded-lg px-4 py-3 text-left text-base font-medium transition-colors ${
+                        isActive 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {s.label}
+                    </motion.button>
+                  )
+                })}
+              </div>
+              
+              <motion.a
+                whileTap={{ scale: 0.98 }}
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onJump("contact")
+                  onClose()
+                }}
+                className="mt-6 rounded-lg bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground"
+              >
+                Contact
+              </motion.a>
+            </div>
+          </motion.nav>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function Navbar({ active, onJump }: { active: SectionId; onJump: (id: SectionId) => void }) {
   const { scrollYProgress } = useScroll()
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1])
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  
+  // Add blur effect based on scroll
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0.8, 1])
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-10 lg:px-16">
-       <motion.button
-  whileTap={{ scale: 0.98 }}
-  onClick={() => onJump("home")}
-  className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 text-lg tracking-tight hover:opacity-90 transition-opacity duration-300"
-  aria-label="Go to home"
->
-  {"< SB . DEV >"}
-</motion.button>
+    <>
+      <motion.header 
+        className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
+        style={{ opacity: headerOpacity }}
+      >
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 md:px-10 lg:px-16">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onJump("home")}
+            className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 text-lg tracking-tight hover:opacity-90 transition-opacity duration-300"
+            aria-label="Go to home"
+          >
+            {"< SB . DEV >"}
+          </motion.button>
 
+          {/* Desktop Navigation */}
+          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+            {sections.map((s) => {
+              const isActive = active === s.id
+              return (
+                <div key={s.id} className="relative">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onJump(s.id)}
+                    className={`relative rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                      isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-highlight"
+                        className="absolute inset-0 -z-10 rounded-md bg-gradient-to-r from-primary to-accent shadow-lg"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    {s.label}
+                  </motion.button>
+                </div>
+              )
+            })}
+          </nav>
 
-        <nav aria-label="Primary" className="relative hidden items-center gap-1 md:flex">
-          {sections.map((s) => {
-            const isActive = active === s.id
-            return (
-              <div key={s.id} className="relative">
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onJump(s.id)}
-                  className={`relative rounded-md px-3 py-2 text-sm transition-colors ${
-                    isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-highlight"
-                      className="absolute inset-0 -z-10 rounded-md bg-primary"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  {s.label}
-                </motion.button>
-              </div>
-            )
-          })}
-        </nav>
+          {/* Desktop Contact Button */}
+          <div className="hidden md:block">
+            <motion.a
+              whileTap={{ scale: 0.98 }}
+              whileHover={{ 
+                scale: 1.05,
+                background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))"
+              }}
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                onJump("contact")
+              }}
+              className="rounded-md bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-all duration-200"
+            >
+              Contact
+            </motion.a>
+          </div>
 
-        <motion.a
-          whileTap={{ scale: 0.98 }}
-          href="#contact"
-          onClick={(e) => {
-            e.preventDefault()
-            onJump("contact")
-          }}
-          className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground"
-        >
-          Contact
-        </motion.a>
-      </div>
-      <motion.div aria-hidden="true" className="h-0.5 bg-primary" style={{ scaleX, transformOrigin: "left" }} />
-    </header>
+          {/* Mobile Menu Button */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setMobileMenuOpen(true)}
+            className="rounded-md p-2 text-muted-foreground hover:text-foreground md:hidden"
+            aria-label="Open menu"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </motion.button>
+        </div>
+        <motion.div 
+          aria-hidden="true" 
+          className="h-0.5 bg-gradient-to-r from-primary to-accent" 
+          style={{ scaleX, transformOrigin: "left" }} 
+        />
+      </motion.header>
+
+      {/* Spacer for fixed header */}
+      <div className="h-16" />
+
+      {/* Mobile Menu */}
+      <MobileMenu 
+        active={active} 
+        onJump={onJump} 
+        isOpen={mobileMenuOpen} 
+        onClose={() => setMobileMenuOpen(false)} 
+      />
+    </>
   )
 }
 
@@ -264,178 +400,289 @@ function Hero() {
   return (
     <div
       ref={containerRef}
-      className="mx-auto grid max-w-6xl items-center gap-10 py-16 md:grid-cols-2 md:py-24 lg:py-28"
+      className="mx-auto max-w-6xl w-full py-12 md:py-24"
     >
-      <div>
-        <motion.div variants={fadeUp(28)} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-          <span className="inline-block rounded-full border border-border bg-secondary px-3 py-1 text-xs text-secondary-foreground">
-            Available for work
-          </span>
-        </motion.div>
-
-        <h1 className="text-balance mt-4 text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl">
-          <AnimatedText text="Hey, I’m Shahroz Butt —" className="block bg-clip-text text-transparent" />
-          <motion.span
-            className="block bg-clip-text text-transparent"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, oklch(0.70 0.12 220) 0%, oklch(0.75 0.10 200) 50%, oklch(0.70 0.12 220) 100%)",
-              backgroundSize: "200% 100%",
+      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center gap-8 lg:gap-10">
+        {/* Text Content - Full width on mobile, half on desktop */}
+        <div className="w-full lg:col-span-1">
+          <motion.div 
+            variants={fadeUp(28)} 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, amount: 0.3 }}
+            animate={{
+              y: [0, -10, 0],
             }}
-            initial={{ backgroundPositionX: "0%" }}
-            animate={{ backgroundPositionX: ["0%", "100%"] }}
-            transition={{ repeat: Number.POSITIVE_INFINITY, repeatType: "mirror", duration: 8, ease: "linear" }}
-          >
-            <AnimatedText
-              text="I build modern web apps and AI systems that blend performance, creativity, and innovation."
-              className="block"
-            />
-          </motion.span>
-        </h1>
-
-        <motion.p
-          variants={fadeUp(20, 0.1)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="text-pretty mt-6 max-w-prose text-muted-foreground"
-        >
-          I care about clean UX, performance, and delivering production‑ready solutions. Let’s turn ideas into products
-          that actually scale.
-        </motion.p>
-
-        <motion.div
-          variants={staggerChildren(0.08, 0.2)}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="mt-8 flex flex-wrap items-center gap-3"
-        >
-          <motion.a
-            ref={ctaMagnet as any}
-            variants={fadeUp(16)}
-            href="#projects"
-            onClick={(e) => {
-              e.preventDefault()
-              document.getElementById("projects")?.scrollIntoView({ behavior: "smooth", block: "start" })
+            transition={{
+              duration: 4,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut"
             }}
-            className="rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow transition-shadow"
-            whileHover={{ boxShadow: "0 0 36px 0 color-mix(in oklab, var(--color-primary) 35%, transparent)" }}
           >
-            View Projects
-          </motion.a>
-          <motion.a
-            ref={ghostMagnet as any}
-            variants={fadeUp(16, 0.05)}
-            href="#contact"
-            onClick={(e) => {
-              e.preventDefault()
-              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }}
-            className="rounded-md border border-border px-5 py-3 text-sm font-medium text-foreground transition-shadow"
-            whileHover={{ boxShadow: "0 0 28px 0 color-mix(in oklab, var(--color-foreground) 20%, transparent)" }}
-          >
-            Contact Me
-          </motion.a>
-        </motion.div>
-
-        {/* skills marquee */}
-        <div aria-hidden className="mt-8 overflow-hidden">
-          <motion.div
-            className="flex gap-4 whitespace-nowrap text-xs text-muted-foreground"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          >
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex gap-4">
-                {[
-                  "TypeScript",
-                  "React",
-                  "Next.js",
-                  "Tailwind",
-                  "Framer Motion",
-                  "Python",
-                  "AWS",
-                  "NLP",
-                  "DeBERTa",
-                  "Speech-to-Text",
-                  "Transformers",
-                  "Docker",
-                  "DynamoDB",
-                  "CI/CD",
-                ].map((t) => (
-                  <span key={t} className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            ))}
+            <span className="inline-block rounded-full border border-border bg-secondary px-3 py-1 text-xs text-secondary-foreground">
+              Available for work
+            </span>
           </motion.div>
-        </div>
-      </div>
 
-      <motion.div
-        className="relative mx-auto aspect-square w-64 overflow-hidden rounded-xl border border-border bg-card md:w-80"
-        initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
-        whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
-        style={{ y: imgY, scale: imgScale }}
-      >
-        <motion.img
-          src="/IMG_8218.jpg"
-          alt="Shahroz Butt portrait"
-          className="h-full w-full object-cover"
-          initial={false}
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "tween", duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
-        />
+          <h1 className="text-balance mt-4 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            <AnimatedText 
+              text="Hey, I'm Shahroz Butt —" 
+              className="block bg-clip-text text-transparent" 
+              viewportAmount={0.3}
+            />
+            <motion.span
+              className="block bg-clip-text text-transparent mt-2"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, oklch(0.70 0.12 220) 0%, oklch(0.75 0.10 200) 50%, oklch(0.70 0.12 220) 100%)",
+                backgroundSize: "200% 100%",
+              }}
+              initial={{ backgroundPositionX: "0%" }}
+              animate={{ backgroundPositionX: ["0%", "100%"] }}
+              transition={{ repeat: Number.POSITIVE_INFINITY, repeatType: "mirror", duration: 8, ease: "linear" }}
+            >
+              <AnimatedText
+                text="I build modern web apps and AI systems that blend performance, creativity, and innovation."
+                className="block whitespace-pre-wrap"
+                viewportAmount={0.3}
+              />
+            </motion.span>
+          </h1>
+
+          <motion.p
+            variants={fadeUp(20, 0.1)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            className="text-pretty mt-4 max-w-prose text-base text-muted-foreground sm:mt-6 sm:text-lg"
+          >
+            I care about clean UX, performance, and delivering production‑ready solutions. Let's turn ideas into products
+            that actually scale.
+          </motion.p>
+
+          <motion.div
+            variants={staggerChildren(0.08, 0.2)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8"
+          >
+            <motion.a
+              ref={ctaMagnet as any}
+              variants={fadeUp(16)}
+              href="#projects"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("projects")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }}
+              className="rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-all duration-200"
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: "0 0 36px 0 color-mix(in oklab, var(--color-primary) 35%, transparent)" 
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              View Projects
+            </motion.a>
+            <motion.a
+              ref={ghostMagnet as any}
+              variants={fadeUp(16, 0.05)}
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }}
+              className="rounded-md border border-border px-5 py-3 text-sm font-medium text-foreground transition-all duration-200"
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: "0 0 28px 0 color-mix(in oklab, var(--color-foreground) 20%, transparent)" 
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Contact Me
+            </motion.a>
+          </motion.div>
+
+          {/* skills marquee with continuous animation */}
+          <div aria-hidden className="mt-6 overflow-hidden sm:mt-8">
+            <motion.div
+              className="flex gap-3 whitespace-nowrap text-xs text-muted-foreground"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+              opacity: { duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1) },
+               y: { duration: 6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
+               }}
+            >
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex gap-3">
+                  {[
+                    "TypeScript",
+                    "React",
+                    "Next.js",
+                    "Tailwind",
+                    "Framer Motion",
+                    "Python",
+                    "AWS",
+                    "NLP",
+                    "DeBERTa",
+                    "Speech-to-Text",
+                    "Transformers",
+                    "Docker",
+                    "DynamoDB",
+                    "CI/CD",
+                  ].map((t) => (
+                    <motion.span 
+                      key={t} 
+                      className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      {t}
+                    </motion.span>
+                  ))}
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Image Content - Centered on all screens */}
         <motion.div
-          className="pointer-events-none absolute -left-3 top-4 rounded-md border border-border bg-secondary px-3 py-1 text-xs text-secondary-foreground shadow"
-          initial={{ opacity: 0, y: -8, rotate: -6 }}
-          whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, type: "spring", stiffness: 250, damping: 18 }}
+          className="w-full lg:col-span-1 flex justify-center lg:justify-end"
+          initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
+          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          style={{ y: imgY, scale: imgScale }}
+          animate={{
+            y: [0, -8, 0],
+          }}
+          transition={{
+          delay: 0.3,
+    type: "spring",
+    stiffness: 250,
+    damping: 18,
+    y: { duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
+  }}
         >
-          1+ yrs experience
+          <div className="relative aspect-square w-48 sm:w-56 md:w-64 lg:w-80 mx-auto lg:mx-0">
+            {/* Main image container with dark theme styling */}
+            <div className="relative w-full h-full overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-card to-muted shadow-2xl">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/60 z-10" />
+              
+              {/* Profile image with dark theme filters */}
+              <motion.img
+                src="/img.png"
+                alt="Shahroz Butt portrait"
+                className="h-full w-full object-cover mix-blend-luminosity contrast-110 brightness-110 saturate-110"
+                initial={false}
+                whileHover={{ scale: 1.05, filter: "contrast(115%) brightness(115%) saturate(120%)" }}
+                transition={{ type: "tween", duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
+                style={{
+                  filter: "contrast(110%) brightness(110%) saturate(110%)",
+                }}
+              />
+              
+              {/* Animated gradient border effect */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/30 via-accent/20 to-primary/30 opacity-50"
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%"],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                }}
+                style={{
+                  backgroundSize: "200% 200%",
+                }}
+              />
+              
+              {/* Experience badge with continuous animation */}
+              <motion.div
+  className="pointer-events-none absolute -left-2 top-4 rounded-md border border-primary/20 bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-medium text-primary-foreground shadow-lg"
+  initial={{ opacity: 0, y: -8, rotate: -6 }}
+  whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+  viewport={{ once: true, amount: 0.3 }}
+  animate={{
+    y: [0, -4, 0],
+    rotate: [-6, -4, -6],
+  }}
+  transition={{
+    duration: 3,
+    repeat: Number.POSITIVE_INFINITY,
+    ease: "easeInOut",
+    type: "tween", 
+  }}
+>
+  🚀 1+ yrs experience
+</motion.div>
+
+
+              {/* Subtle glow effect */}
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-2xl"
+                initial={{ boxShadow: "0 0 0px rgba(28, 100, 242, 0.1)" }}
+                whileHover={{ 
+                  boxShadow: "0 0 80px rgba(28, 100, 242, 0.25), inset 0 0 60px rgba(28, 100, 242, 0.1)" 
+                }}
+                transition={{ type: "tween", duration: 0.3 }}
+              />
+            </div>
+            
+            {/* Floating particles around image */}
+            {[1, 2, 3].map((i) => (
+              <motion.div
+                key={i}
+                className={`absolute w-2 h-2 rounded-full bg-primary/40 ${
+                  i === 1 ? "top-2 -right-2" : 
+                  i === 2 ? "bottom-4 -left-1" : 
+                  "top-3/4 -right-3"
+                }`}
+                animate={{
+                  y: [0, -15, 0],
+                  opacity: [0.4, 0.8, 0.4],
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 3 + i,
+                  repeat: Number.POSITIVE_INFINITY,
+                  delay: i * 0.5,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+          </div>
         </motion.div>
-        {/* glow ring */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-xl"
-          initial={{ boxShadow: "0 0 0px rgba(0,0,0,0)" }}
-          whileHover={{ boxShadow: "0 0 64px rgba(28, 100, 242, 0.25)" }}
-          transition={{ type: "tween", duration: 0.3 }}
-        />
-      </motion.div>
+      </div>
     </div>
   )
 }
 
 function About() {
   return (
-    <div className="mx-auto max-w-4xl py-16 md:py-24">
+    <div className="mx-auto max-w-4xl py-12 md:py-24">
       <MaskReveal>
         <motion.h2
           variants={fadeUp(20)}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
-          className="text-3xl font-semibold md:text-4xl"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-2xl font-semibold sm:text-3xl md:text-4xl"
         >
-          <AnimatedText text="About Me" />
+          <AnimatedText text="About Me" viewportAmount={0.3} />
         </motion.h2>
       </MaskReveal>
       <motion.p
         variants={fadeUp(18, 0.05)}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="mt-6 text-muted-foreground"
+        viewport={{ once: true, amount: 0.3 }}
+        className="mt-4 text-base text-muted-foreground sm:mt-6 sm:text-lg"
       >
-        I’m a BS Computer Science student and software developer passionate about modern web stacks and applied AI. My
+        I'm a BS Computer Science student and software developer passionate about modern web stacks and applied AI. My
         work ranges from building cloud‑native systems on AWS to prototyping NLP and speech‑to‑text pipelines for
         real‑time media monitoring. I enjoy turning research ideas into real‑world tools and delivering software that
         solves actual problems.
@@ -445,10 +692,22 @@ function About() {
         variants={staggerChildren(0.06, 0.2)}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="mt-8 grid gap-4 md:grid-cols-3"
+        viewport={{ once: true, amount: 0.3 }}
+        className="mt-6 grid gap-4 sm:mt-8 md:grid-cols-3"
       >
-        <motion.div variants={fadeUp(16)} className="rounded-lg border border-border bg-card p-4">
+        <motion.div 
+          variants={fadeUp(16)} 
+          className="rounded-lg border border-border bg-card p-4 relative overflow-hidden"
+          whileHover={{ scale: 1.02 }}
+          animate={{
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut"
+          }}
+        >
           <div className="text-sm font-medium text-muted-foreground">What I Do</div>
           <div className="mt-2 flex flex-col gap-2 text-sm">
             <span className="rounded-md bg-accent px-2 py-1 text-accent-foreground">
@@ -460,14 +719,40 @@ function About() {
             </span>
           </div>
         </motion.div>
-        <motion.div variants={fadeUp(16, 0.05)} className="rounded-lg border border-border bg-card p-4">
+        <motion.div 
+          variants={fadeUp(16, 0.05)} 
+          className="rounded-lg border border-border bg-card p-4 relative overflow-hidden"
+          whileHover={{ scale: 1.02 }}
+          animate={{
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+            delay: 0.2
+          }}
+        >
           <div className="text-sm font-medium text-muted-foreground">Focus</div>
           <div className="mt-2 text-sm text-foreground">
             Finishing my AI‑Powered News Monitoring FYP, improving deployment pipelines, and building production‑ready
             SaaS features for small businesses.
           </div>
         </motion.div>
-        <motion.div variants={fadeUp(16, 0.1)} className="rounded-lg border border-border bg-card p-4">
+        <motion.div 
+          variants={fadeUp(16, 0.1)} 
+          className="rounded-lg border border-border bg-card p-4 relative overflow-hidden"
+          whileHover={{ scale: 1.02 }}
+          animate={{
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+            delay: 0.4
+          }}
+        >
           <div className="text-sm font-medium text-muted-foreground">Skills</div>
           <div className="mt-2 flex flex-wrap gap-2">
             {[
@@ -485,9 +770,14 @@ function About() {
               "SQL",
               "CI/CD",
             ].map((s) => (
-              <span key={s} className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground">
+              <motion.span 
+                key={s} 
+                className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
                 {s}
-              </span>
+              </motion.span>
             ))}
           </div>
         </motion.div>
@@ -538,18 +828,18 @@ function Experience() {
   const spineScaleY = useTransform(scrollYProgress, [0, 1], [0, 1])
 
   return (
-    <div className="mx-auto max-w-4xl py-16 md:py-24">
+    <div className="mx-auto max-w-4xl py-12 md:py-24">
       <motion.h2
         variants={fadeUp(20)}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="text-3xl font-semibold md:text-4xl"
+        viewport={{ once: true, amount: 0.3 }}
+        className="text-2xl font-semibold sm:text-3xl md:text-4xl"
       >
-        <AnimatedText text="Experience" />
+        <AnimatedText text="Experience" viewportAmount={0.3} />
       </motion.h2>
 
-      <div ref={ref} className="relative mt-10 space-y-8">
+      <div ref={ref} className="relative mt-8 space-y-6 sm:mt-10 sm:space-y-8">
         <motion.div
           aria-hidden
           className="absolute left-3 top-0 h-full w-[2px] origin-top rounded bg-primary/20 md:left-4"
@@ -558,26 +848,28 @@ function Experience() {
         {items.map((item, idx) => (
           <motion.div
             key={item.role}
-            className="relative rounded-lg border border-border bg-card p-6 pl-8 md:pl-10"
+            className="relative rounded-lg border border-border bg-card p-4 pl-8 sm:p-6 md:pl-10"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.3 }}
-            transition={{ delay: idx * 0.06, duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
+            transition={{ delay: idx * 0.06, duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
           >
             <motion.span
               className="absolute left-0 top-6 block h-3 w-3 -translate-x-1/2 rounded-full bg-primary shadow-md"
-              animate={{ boxShadow: ["0 0 0 0px var(--color-primary)", "0 0 0 10px transparent"] }}
+              animate={{ 
+                scale: [1, 1.2, 1],
+                boxShadow: ["0 0 0 0px var(--color-primary)", "0 0 0 10px transparent", "0 0 0 0px var(--color-primary)"] 
+              }}
               transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2, ease: "easeOut" }}
             />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
                 <div className="text-lg font-semibold">{item.role}</div>
                 <div className="text-sm text-muted-foreground">{item.org}</div>
               </div>
-              <div className="text-xs text-muted-foreground">{item.period}</div>
+              <div className="text-xs text-muted-foreground sm:text-right">{item.period}</div>
             </div>
-            <ul className="mt-4 list-inside space-y-2">
+            <ul className="mt-3 list-inside space-y-2 sm:mt-4">
               {item.bullets.map((b, i) => (
                 <motion.li
                   key={i}
@@ -643,45 +935,43 @@ function Projects() {
   ]
 
   return (
-    <div className="mx-auto max-w-6xl py-16 md:py-24">
+    <div className="mx-auto max-w-6xl py-12 md:py-24">
       <motion.h2
         variants={fadeUp(20)}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="text-3xl font-semibold md:text-4xl"
+        viewport={{ once: true, amount: 0.3 }}
+        className="text-2xl font-semibold sm:text-3xl md:text-4xl"
       >
-        <AnimatedText text="Selected Projects" />
+        <AnimatedText text="Selected Projects" viewportAmount={0.3} />
       </motion.h2>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((p, idx) => (
           <TiltCard key={p.title} className="will-change-transform">
             <motion.a
               href={p.link}
               target={p.link && p.link !== "#" ? "_blank" : undefined}
               rel={p.link && p.link !== "#" ? "noreferrer" : undefined}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card"
+              className="group relative block overflow-hidden rounded-xl border border-border bg-card shadow-lg"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: false, amount: 0.3 }}
-              transition={{ delay: idx * 0.06, duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
+              transition={{ delay: idx * 0.06, duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
               whileHover={{ scale: 1.02 }}
             >
               <div className="relative overflow-hidden">
                 <motion.img
                   src={p.image || "/placeholder.svg?height=200&width=320&query=project image"}
                   alt={`${p.title} preview`}
-                  className="h-48 w-full object-cover md:h-40 lg:h-44"
+                  className="h-40 w-full object-cover sm:h-48 md:h-40 lg:h-44"
                   initial={{ scale: 1 }}
                   whileHover={{ scale: 1.08 }}
-                  transition={{ type: "tween", duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
+                  transition={{ type: "tween", duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
                 />
                 <motion.div
-                  className="pointer-events-none absolute inset-0 bg-black/0"
-                  whileHover={{ backgroundColor: "rgba(0,0,0,0.18)" }}
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0"
+                  whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
@@ -700,9 +990,14 @@ function Projects() {
                 <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.tags.map((t) => (
-                    <span key={t} className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground">
+                    <motion.span 
+                      key={t} 
+                      className="rounded-md bg-accent px-2 py-1 text-xs text-accent-foreground"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
                       {t}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               </div>
@@ -718,6 +1013,8 @@ function Contact() {
   const controls = useAnimationControls()
   const ref = React.useRef<HTMLFormElement>(null)
   const inView = useInView(ref, { amount: 0.4 })
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle')
 
   React.useEffect(() => {
     if (inView) {
@@ -725,88 +1022,161 @@ function Contact() {
     }
   }, [inView, controls])
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      message: formData.get('message')
+    }
+
+    try {
+      // Using Formspree for form submission (free service)
+      const response = await fetch('https://formspree.io/f/mzzjyakp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        if (ref.current) {
+          ref.current.reset()
+        }         
+      } else {
+        throw new Error('Form submission failed')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-3xl py-16 md:py-24">
+    <div className="mx-auto max-w-3xl py-12 md:py-24">
       <MaskReveal>
         <motion.h2
           variants={fadeUp(20)}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
-          className="text-3xl font-semibold md:text-4xl"
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-2xl font-semibold sm:text-3xl md:text-4xl"
         >
-          <AnimatedText text="Let’s Collaborate!" />
+          <AnimatedText text="Let's Collaborate!" viewportAmount={0.3} />
         </motion.h2>
       </MaskReveal>
       <motion.p
         variants={fadeUp(18, 0.05)}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        className="mt-6 text-muted-foreground"
+        viewport={{ once: true, amount: 0.3 }}
+        className="mt-4 text-base text-muted-foreground sm:mt-6 sm:text-lg"
       >
-        Have a project in mind? I’m open to freelance opportunities and collaborations that involve AI, cloud apps, or
+        Have a project in mind? I'm open to freelance opportunities and collaborations that involve AI, cloud apps, or
         frontend design.
       </motion.p>
+      
       <motion.form
         ref={ref}
         variants={staggerChildren(0.06, 0.2)}
         initial="hidden"
         animate={controls}
-        className="mt-8 grid gap-4 rounded-xl border border-border bg-card p-6"
-        onSubmit={(e) => {
-          e.preventDefault()
-          const fd = new FormData(e.currentTarget)
-          const name = fd.get("name")
-          const email = fd.get("email")
-          const message = fd.get("message")
-          console.log("[v0] Contact form submitted:", { name, email, message })
-          alert("Thanks for reaching out! I will get back to you shortly.")
-          e.currentTarget.reset()
-        }}
+        className="mt-6 grid gap-4 rounded-xl border border-border bg-card p-4 sm:mt-8 sm:p-6"
+        onSubmit={handleSubmit}
       >
         <label className="grid gap-2">
-          <span className="text-sm text-muted-foreground">Name</span>
+          <span className="text-sm text-muted-foreground">Name *</span>
           <motion.input
             variants={fadeUp(14)}
             name="name"
             required
             placeholder="Your name"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            disabled={isSubmitting}
           />
         </label>
         <label className="grid gap-2">
-          <span className="text-sm text-muted-foreground">Email</span>
+          <span className="text-sm text-muted-foreground">Email *</span>
           <motion.input
             variants={fadeUp(14, 0.05)}
             type="email"
             required
             name="email"
             placeholder="Your email"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            disabled={isSubmitting}
           />
         </label>
         <label className="grid gap-2">
-          <span className="text-sm text-muted-foreground">Message</span>
+          <span className="text-sm text-muted-foreground">Message *</span>
           <motion.textarea
             variants={fadeUp(14, 0.1)}
             name="message"
             required
             rows={5}
             placeholder="Tell me about your project..."
-            className="resize-y rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="resize-y rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            disabled={isSubmitting}
           />
         </label>
+        
+        {/* Status Messages */}
+        <AnimatePresence>
+          {submitStatus === 'success' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="rounded-md bg-green-500/10 border border-green-500/20 p-3"
+            >
+              <p className="text-sm text-green-600">Thanks for your message! I'll get back to you soon.</p>
+
+            </motion.div>
+          )}
+          {submitStatus === 'error' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="rounded-md bg-red-500/10 border border-red-500/20 p-3"
+            >
+              <p className="text-sm text-red-600">Something went wrong. Please try again or email me directly.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.button
           variants={fadeUp(14, 0.15)}
-          whileTap={{ scale: 0.98 }}
-          whileHover={{ boxShadow: "0 0 36px 0 color-mix(in oklab, var(--color-primary) 35%, transparent)" }}
+          whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+          whileHover={isSubmitting ? {} : { 
+            scale: 1.02,
+            boxShadow: "0 0 36px 0 color-mix(in oklab, var(--color-primary) 35%, transparent)" 
+          }}
           type="submit"
-          className="inline-flex w-fit items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+          disabled={isSubmitting}
+          className="inline-flex w-full items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed sm:w-fit"
         >
-          Send Message
+          {isSubmitting ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+              className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full mr-2"
+            />
+          ) : null}
+          {isSubmitting ? 'Sending...' : 'Send Message'}
         </motion.button>
-        <div className="text-xs text-muted-foreground">Prefer email? bshahroz48@gmail.com</div>
+        
+        <div className="text-xs text-muted-foreground">
+          Prefer email? <a href="mailto:bshahroz48@gmail.com" className="text-primary hover:underline">bshahroz48@gmail.com</a>
+        </div>
       </motion.form>
     </div>
   )
@@ -814,22 +1184,52 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground md:flex-row md:px-10 lg:px-16">
-        <div className="order-2 md:order-1">© {new Date().getFullYear()} Shahroz Butt. All rights reserved.</div>
+    <footer className="border-t border-border bg-card/50">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm text-muted-foreground sm:px-6 md:flex-row md:px-10 lg:px-16">
+        <div className="order-2 text-center md:order-1 md:text-left">
+          © {new Date().getFullYear()} Shahroz Butt. All rights reserved.
+        </div>
         <div className="order-1 flex items-center gap-4 md:order-2">
-          <a href="https://pk.linkedin.com/in/muhammad-shahroz-butt-4aa093309" className="hover:text-foreground" aria-label="LinkedIn" target="_blank">
+          <motion.a 
+            href="https://pk.linkedin.com/in/muhammad-shahroz-butt-4aa093309" 
+            className="hover:text-foreground transition-colors" 
+            aria-label="LinkedIn" 
+            target="_blank"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
             LinkedIn
-          </a>
-          <a href="https://github.com/ShahrozButtOfficial" className="hover:text-foreground" aria-label="GitHub" target="_blank">
+          </motion.a>
+          <motion.a 
+            href="https://github.com/ShahrozButtOfficial" 
+            className="hover:text-foreground transition-colors" 
+            aria-label="GitHub" 
+            target="_blank"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
             GitHub
-          </a>
-          <a href="mailto:bshahroz48@gmail.com" className="hover:text-foreground" aria-label="Email" target="_blank">
+          </motion.a>
+          <motion.a 
+            href="mailto:bshahroz48@gmail.com" 
+            className="hover:text-foreground transition-colors" 
+            aria-label="Email" 
+            target="_blank"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Email
-          </a>
-          <a href="https://www.instagram.com/shahroz_butt_official/" className="hover:text-foreground" aria-label="Instagram" target="_blank">
+          </motion.a>
+          <motion.a 
+            href="https://www.instagram.com/shahroz_butt_official/" 
+            className="hover:text-foreground transition-colors" 
+            aria-label="Instagram" 
+            target="_blank"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Instagram
-          </a>
+          </motion.a>
         </div>
       </div>
     </footer>
@@ -845,13 +1245,20 @@ function ScrollTopFab() {
       <motion.button
         aria-label="Scroll to top"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 z-50 rounded-full bg-primary p-3 text-primary-foreground shadow-lg"
+        className="fixed bottom-4 right-4 z-50 rounded-full bg-primary p-3 text-primary-foreground shadow-lg sm:bottom-6 sm:right-6"
         style={{ opacity: show, scale: show }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
       >
-        ↑
+        <motion.span
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+        >
+          ↑
+        </motion.span>
       </motion.button>
     </AnimatePresence>
   )
@@ -864,9 +1271,8 @@ function MaskReveal({ children, className }: { children: React.ReactNode; classN
     <motion.div
       initial={{ clipPath: "inset(0 100% 0 0 round 8px)" }}
       whileInView={{ clipPath: "inset(0 0% 0 0 round 8px)" }}
-      viewport={{ once: true, amount: 0.6 }}
-      transition={{ duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1)
- }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1) }}
       className={className}
     >
       {children}
@@ -896,6 +1302,37 @@ function BackgroundFX() {
   return <motion.div aria-hidden className="pointer-events-none fixed inset-0 -z-10" style={{ backgroundImage: bg }} />
 }
 
+// Add continuous background animation component
+function ContinuousBackgroundAnimation() {
+  return (
+    <div className="fixed inset-0 -z-20 overflow-hidden">
+      {/* Animated gradient orbs */}
+      {[1, 2, 3, 4].map((i) => (
+        <motion.div
+          key={i}
+          className={`absolute rounded-full mix-blend-soft-light ${
+            i === 1 ? "w-96 h-96 bg-primary/10 top-1/4 -left-24" :
+            i === 2 ? "w-80 h-80 bg-accent/10 top-1/2 -right-20" :
+            i === 3 ? "w-64 h-64 bg-primary/5 bottom-1/4 left-1/4" :
+            "w-72 h-72 bg-accent/5 top-1/3 right-1/3"
+          }`}
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 20 + i * 5,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+            delay: i * 2
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function Page() {
   const { active, setActive } = useActiveSection(sections.map((s) => s.id as SectionId))
 
@@ -905,7 +1342,7 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-dvh">
+    <main className="min-h-dvh overflow-x-hidden">
       <style jsx global>{`
         :root {
           /* neutrals */
@@ -944,13 +1381,17 @@ export default function Page() {
         }
       `}</style>
 
+      {/* Continuous background animations */}
+      <ContinuousBackgroundAnimation />
+      
       {/* background spotlight */}
       <BackgroundFX />
-      {/* sticky nav */}
+      
+      {/* sticky nav with blur effect */}
       <Navbar active={active} onJump={onJump} />
 
       {/* Home */}
-      <Section id="home" className="pt-10">
+      <Section id="home" className="pt-8 sm:pt-10">
         <Hero />
       </Section>
 
