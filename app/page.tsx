@@ -503,15 +503,20 @@ function Hero() {
             </motion.a>
           </motion.div>
 
-          {/* skills marquee with continuous animation */}
+          {/* Skills Marquee with continuous right-to-left animation */}
           <div aria-hidden className="mt-6 overflow-hidden sm:mt-8">
             <motion.div
               className="flex gap-3 whitespace-nowrap text-xs text-muted-foreground"
-              animate={{ x: ["0%", "-50%"] }}
+              animate={{ 
+                x: ["0%", "-50%"] 
+              }}
               transition={{
-              opacity: { duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1) },
-               y: { duration: 6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-               }}
+                x: {
+                  duration: 20,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }
+              }}
             >
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="flex gap-3">
