@@ -621,7 +621,7 @@ function Hero() {
     type: "tween", 
   }}
 >
-  🚀 1+ yrs experience
+  🚀7+ practical projects
 </motion.div>
 
 
@@ -794,37 +794,58 @@ function About() {
 function Experience() {
   const items = [
     {
-      role: "AI Engineer & FYP Lead",
-      org: "AI-Powered News Monitoring System",
-      period: "2025",
-      bullets: [
-        "Designed an end-to-end real-time media monitoring system using speech-to-text and NLP pipelines with DeBERTa for fake-news detection.",
-        "Built data ingestion, preprocessing, and alerting modules.",
-      ],
-    },
-    {
-      role: "Cloud Developer / Architect",
-      org: "MediAlert — Smart Healthcare",
-      period: "2025",
-      bullets: [
-        "Designed cloud-native analytics and notification workflows using AWS Lambda, Step Functions, API Gateway, and Cognito.",
-        "Implemented event-driven pipelines and secure authentication.",
-      ],
-    },
-    {
-      role: "Full-Stack Engineer (E-commerce)",
-      org: "CraftKart",
+      role: "Frontend Developer",
+      org: "Quiz Web Application",
       period: "2024",
       bullets: [
-        "Built a scalable e-commerce platform with React/Nuxt, RDS, and S3, with Auto Scaling EC2 instances.",
-        "Developed payment flows, catalog systems, and admin dashboards.",
+        "Built a responsive quiz experience in React with section-based MCQs and smooth user flow.",
+        "Focused on reusable UI patterns and performance for fast interaction.",
       ],
     },
     {
-      role: "Frontend Developer (Portfolio & Tools)",
-      org: "Personal / University Projects",
-      period: "2023–2025",
-      bullets: ["Created animated search interfaces, draggable UIs, dashboards, and print‑ready PDF export features."],
+      role: "Full-Stack Developer",
+      org: "Milk Budget Management Web Application",
+      period: "2024",
+      bullets: [
+        "Developed budget tracking workflows with Vue.js frontend, Express.js backend, and MongoDB.",
+        "Implemented dynamic data handling and practical expense management features.",
+      ],
+    },
+    {
+      role: "Frontend Developer (PDF Automation)",
+      org: "Result Generator System",
+      period: "2024",
+      bullets: [
+        "Created a Vue.js marks-entry workflow with dynamic table generation.",
+        "Integrated jsPDF and AutoTable to generate professional downloadable student reports.",
+      ],
+    },
+    {
+      role: "Desktop Application Developer",
+      org: "Retail Bill System",
+      period: "2023",
+      bullets: [
+        "Built a desktop billing application in Python Tkinter with bill generation and tax calculations.",
+        "Added search, save, and structured billing features for daily retail operations.",
+      ],
+    },
+    {
+      role: "Mobile App Developer (Expo)",
+      org: "Cross-Platform Mobile Applications",
+      period: "2025–Present",
+      bullets: [
+        "Build React Native apps with Expo for Android and iOS from a single codebase.",
+        "Implement API integration, navigation flows, and production-ready mobile UI patterns.",
+      ],
+    },
+    {
+      role: "Desktop App Developer (Electron.js)",
+      org: "Cross-Platform Desktop Applications",
+      period: "2025–Present",
+      bullets: [
+        "Develop desktop software using Electron.js with modern web stacks.",
+        "Create packaged apps with local workflows, native-like UX, and maintainable architecture.",
+      ],
     },
   ]
 
@@ -904,6 +925,12 @@ type Project = {
 }
 
 function Projects() {
+  const [expandedProjects, setExpandedProjects] = React.useState<Record<string, boolean>>({})
+
+  const toggleProjectDescription = (title: string) => {
+    setExpandedProjects((prev) => ({ ...prev, [title]: !prev[title] }))
+  }
+
   const projects: Project[] = [
     {
       title: "Quiz Web Application",
@@ -954,10 +981,7 @@ function Projects() {
       <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((p, idx) => (
           <TiltCard key={p.title} className="will-change-transform">
-            <motion.a
-              href={p.link}
-              target={p.link && p.link !== "#" ? "_blank" : undefined}
-              rel={p.link && p.link !== "#" ? "noreferrer" : undefined}
+            <motion.div
               className="group relative block overflow-hidden rounded-xl border border-border bg-card shadow-lg"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -992,7 +1016,21 @@ function Projects() {
                     Case
                   </motion.span>
                 </div>
-                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+                <p
+                  className={`mt-2 text-sm text-muted-foreground ${expandedProjects[p.title] ? "" : "line-clamp-3"}`}
+                >
+                  {p.description}
+                </p>
+                {p.description.length > 180 && (
+                  <button
+                    type="button"
+                    onClick={() => toggleProjectDescription(p.title)}
+                    className="mt-2 text-sm font-medium text-primary hover:underline"
+                    aria-label={`${expandedProjects[p.title] ? "Show less" : "Read more"} about ${p.title}`}
+                  >
+                    {expandedProjects[p.title] ? "Show less" : "Read more"}
+                  </button>
+                )}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.tags.map((t) => (
                     <motion.span 
@@ -1005,8 +1043,19 @@ function Projects() {
                     </motion.span>
                   ))}
                 </div>
+                {p.link && p.link !== "#" && (
+                  <motion.a
+                    href={p.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Open Project
+                  </motion.a>
+                )}
               </div>
-            </motion.a>
+            </motion.div>
           </TiltCard>
         ))}
       </div>
