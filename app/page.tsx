@@ -687,10 +687,10 @@ function About() {
         viewport={{ once: true, amount: 0.3 }}
         className="mt-4 text-base text-muted-foreground sm:mt-6 sm:text-lg"
       >
-        I'm a BS Computer Science student and software developer passionate about modern web stacks and applied AI. My
-        work ranges from building cloud‑native systems on AWS to prototyping NLP and speech‑to‑text pipelines for
-        real‑time media monitoring. I enjoy turning research ideas into real‑world tools and delivering software that
-        solves actual problems.
+        I'm a BS Computer Science student and software developer focused on full-stack products across web, mobile,
+        and desktop. I build practical systems like cross-platform news and booking platforms, Electron desktop tools,
+        and data-driven business apps using modern JavaScript/TypeScript stacks. I enjoy turning product ideas into
+        reliable, user-friendly software that solves real operational problems.
       </motion.p>
 
       <motion.div
@@ -716,11 +716,13 @@ function About() {
           <div className="text-sm font-medium text-muted-foreground">What I Do</div>
           <div className="mt-2 flex flex-col gap-2 text-sm">
             <span className="rounded-md bg-accent px-2 py-1 text-accent-foreground">
-              Build SPAs with React/Vue/Nuxt + Tailwind
+              Build full-stack web apps with React, Node.js, Express, and SQL/NoSQL
             </span>
-            <span className="rounded-md bg-accent px-2 py-1 text-accent-foreground">Architect serverless on AWS</span>
             <span className="rounded-md bg-accent px-2 py-1 text-accent-foreground">
-              Prototype and deploy NLP/ML (e.g., DeBERTa)
+              Develop cross-platform mobile apps with React Native + Expo
+            </span>
+            <span className="rounded-md bg-accent px-2 py-1 text-accent-foreground">
+              Create desktop apps with Electron.js for business workflows
             </span>
           </div>
         </motion.div>
@@ -740,8 +742,8 @@ function About() {
         >
           <div className="text-sm font-medium text-muted-foreground">Focus</div>
           <div className="mt-2 text-sm text-foreground">
-            Finishing my AI‑Powered News Monitoring FYP, improving deployment pipelines, and building production‑ready
-            SaaS features for small businesses.
+            Expanding production-ready projects such as TRAK, Pine-Tree House, and Tailorized while improving
+            architecture, UX quality, and real-world delivery speed across platforms.
           </div>
         </motion.div>
         <motion.div 
@@ -761,19 +763,21 @@ function About() {
           <div className="text-sm font-medium text-muted-foreground">Skills</div>
           <div className="mt-2 flex flex-wrap gap-2">
             {[
+              "TypeScript",
               "React",
-              "Vue/Nuxt",
+              "React Native",
+              "Expo",
+              "Electron.js",
+              "Vue",
               "TailwindCSS",
-              "Framer Motion",
               "Node.js",
               "Express",
+              "MySQL",
+              "MongoDB",
+              "SQLite",
+              "Stripe",
               "Python",
-              "NLP",
-              "Speech‑to‑Text",
-              "AWS",
-              "Docker",
-              "SQL",
-              "CI/CD",
+              "Framer Motion",
             ].map((s) => (
               <motion.span 
                 key={s} 
@@ -793,6 +797,33 @@ function About() {
 
 function Experience() {
   const items = [
+    {
+      role: "Mobile & Web App Developer",
+      org: "TRAK — Truth and Real-time Alert Keeper",
+      period: "2025–Present",
+      bullets: [
+        "Built a cross-platform news platform for Android, iOS, and Web using React Native, React, and TypeScript.",
+        "Implemented authentication, personalized feeds, admin analytics, notifications, and performance optimizations.",
+      ],
+    },
+    {
+      role: "Full-Stack Developer",
+      org: "Pine-Tree House",
+      period: "2025",
+      bullets: [
+        "Developed a villa booking platform with responsive frontend, real-time availability, and interactive galleries.",
+        "Built backend workflows with Node.js, Express, MySQL, Stripe payments, and secure admin operations.",
+      ],
+    },
+    {
+      role: "Desktop App Developer (Electron.js)",
+      org: "Tailorized",
+      period: "2025",
+      bullets: [
+        "Created an Electron desktop app with React and Node.js for managing tailoring customers, measurements, and orders.",
+        "Designed practical data workflows for faster in-shop order handling and tracking.",
+      ],
+    },
     {
       role: "Frontend Developer",
       org: "Quiz Web Application",
@@ -829,24 +860,6 @@ function Experience() {
         "Added search, save, and structured billing features for daily retail operations.",
       ],
     },
-    {
-      role: "Mobile App Developer (Expo)",
-      org: "Cross-Platform Mobile Applications",
-      period: "2025–Present",
-      bullets: [
-        "Build React Native apps with Expo for Android and iOS from a single codebase.",
-        "Implement API integration, navigation flows, and production-ready mobile UI patterns.",
-      ],
-    },
-    {
-      role: "Desktop App Developer (Electron.js)",
-      org: "Cross-Platform Desktop Applications",
-      period: "2025–Present",
-      bullets: [
-        "Develop desktop software using Electron.js with modern web stacks.",
-        "Create packaged apps with local workflows, native-like UX, and maintainable architecture.",
-      ],
-    },
   ]
 
   const ref = React.useRef<HTMLDivElement>(null)
@@ -873,7 +886,7 @@ function Experience() {
         />
         {items.map((item, idx) => (
           <motion.div
-            key={item.role}
+            key={`${item.role}-${item.org}`}
             className="relative rounded-lg border border-border bg-card p-4 pl-8 sm:p-6 md:pl-10"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -933,6 +946,30 @@ function Projects() {
 
   const projects: Project[] = [
     {
+      title:"TRAK-Truth and Real-time Alert Keeper",
+      description:
+      "A cross-platform news aggregation app using React Native and React, supporting iOS, Android, and Web. Implemented features including user authentication, personalized news feeds, search, admin dashboard with analytics, and real-time notifications. Used React Navigation, TypeScript, and native modules for Android (Kotlin) and iOS (Swift). Built a responsive web version with React Router and Vite. Integrated animations with React Native Reanimated and Lottie, and data visualization with React Native Chart Kit. Implemented dark/light theme support and optimized performance with code-splitting and lazy loading.",
+      image: "/TRAK.png",
+      tags: ["React Native", "React", "TypeScript", "Vite", "Kotlin", "JavaScript"],
+      link: "https://trak-fyp.netlify.app/",
+    },
+    {
+      title:"Pine-Tree House",
+      description:
+      "A full-stack booking platform for a premium villa rental business featuring a responsive website with interactive galleries and real-time availability. Built a Node.js/Express backend with MySQL database, Stripe payment processing, and automated notifications via email and SMS. Implemented admin dashboard for managing reservations, pricing, and guest information with security features including JWT authentication, password encryption, and rate limiting. The system handles the complete booking lifecycle from inquiry to payment confirmation with seamless frontend-backend synchronization.",
+      image: "/PineTreeHouse.png",
+      tags: ["HTML5", "CSS", "vanilla JavaScript", "Node.js", "MySQL"],
+      link: "https://pine-tree-house.netlify.app/",
+    },
+    {
+      title:"Tailorized",
+      description:
+      "A desktop application built with Electron, React, and Node.js that allows tailor shops to manage customers, measurements, and orders efficiently.",
+      image: "/Tailorized.png",
+      tags: ["React.js", "Node.js", "Express.js", "SQLite3", "CORS", "Electron.js"],
+      link: "https://tailorized-client.vercel.app/",
+    },
+    {
       title: "Quiz Web Application",
       description:
         "This project is a responsive quiz web application developed using React. The application simulates a quiz environment where users can answer multiple-choice questions divided into different sections, similar to a university entrance test.",
@@ -981,7 +1018,10 @@ function Projects() {
       <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((p, idx) => (
           <TiltCard key={p.title} className="will-change-transform">
-            <motion.div
+            <motion.a
+              href={p.link}
+              target={p.link && p.link !== "#" ? "_blank" : undefined}
+              rel={p.link && p.link !== "#" ? "noreferrer" : undefined}
               className="group relative block overflow-hidden rounded-xl border border-border bg-card shadow-lg"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -1024,7 +1064,11 @@ function Projects() {
                 {p.description.length > 180 && (
                   <button
                     type="button"
-                    onClick={() => toggleProjectDescription(p.title)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      toggleProjectDescription(p.title)
+                    }}
                     className="mt-2 text-sm font-medium text-primary hover:underline"
                     aria-label={`${expandedProjects[p.title] ? "Show less" : "Read more"} about ${p.title}`}
                   >
@@ -1043,19 +1087,8 @@ function Projects() {
                     </motion.span>
                   ))}
                 </div>
-                {p.link && p.link !== "#" && (
-                  <motion.a
-                    href={p.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-4 inline-flex rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Open Project
-                  </motion.a>
-                )}
               </div>
-            </motion.div>
+            </motion.a>
           </TiltCard>
         ))}
       </div>
