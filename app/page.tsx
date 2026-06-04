@@ -189,11 +189,12 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
   )
 }
 
-function MobileMenu({ active, onJump, isOpen, onClose }: { 
+function MobileMenu({ active, onJump, isOpen, onClose, onResumeClick }: { 
   active: SectionId; 
   onJump: (id: SectionId) => void;
   isOpen: boolean;
   onClose: () => void;
+  onResumeClick: () => void;
 }) {
   return (
     <AnimatePresence>
@@ -224,9 +225,10 @@ function MobileMenu({ active, onJump, isOpen, onClose }: {
                     onJump("home")
                     onClose()
                   }}
-                  className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 text-lg tracking-tight"
+                  className="flex items-center"
+                  aria-label="Go to home"
                 >
-                  {"< SB . DEV >"}
+                  <img src="/logo.png" alt="Logo" className="h-20 w-20" />
                 </motion.button>
                 <button
                   onClick={onClose}
@@ -264,13 +266,24 @@ function MobileMenu({ active, onJump, isOpen, onClose }: {
               
               <motion.a
                 whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  onResumeClick()
+                  onClose()
+                }}
+                className="mt-4 rounded-lg border border-border px-4 py-3 text-center text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+              >
+                Resume
+              </motion.a>
+
+              <motion.a
+                whileTap={{ scale: 0.98 }}
                 href="#contact"
                 onClick={(e) => {
                   e.preventDefault()
                   onJump("contact")
                   onClose()
                 }}
-                className="mt-6 rounded-lg bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground"
+                className="mt-2 rounded-lg bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground"
               >
                 Contact
               </motion.a>
@@ -282,7 +295,7 @@ function MobileMenu({ active, onJump, isOpen, onClose }: {
   )
 }
 
-function Navbar({ active, onJump }: { active: SectionId; onJump: (id: SectionId) => void }) {
+function Navbar({ active, onJump, onResumeClick }: { active: SectionId; onJump: (id: SectionId) => void; onResumeClick: () => void }) {
   const { scrollYProgress } = useScroll()
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1])
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
@@ -300,10 +313,10 @@ function Navbar({ active, onJump }: { active: SectionId; onJump: (id: SectionId)
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => onJump("home")}
-            className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-400 text-lg tracking-tight hover:opacity-90 transition-opacity duration-300"
+            className="flex items-center hover:opacity-90 transition-opacity duration-300"
             aria-label="Go to home"
           >
-            {"< SB . DEV >"}
+            <img src="/logo.png" alt="Logo" className="h-20 w-20" />
           </motion.button>
 
           {/* Desktop Navigation */}
@@ -335,7 +348,18 @@ function Navbar({ active, onJump }: { active: SectionId; onJump: (id: SectionId)
           </nav>
 
           {/* Desktop Contact Button */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            <motion.a
+              whileTap={{ scale: 0.98 }}
+              onClick={onResumeClick}
+              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer"
+              whileHover={{ 
+                scale: 1.05,
+                textDecoration: "underline"
+              }}
+            >
+              Resume
+            </motion.a>
             <motion.a
               whileTap={{ scale: 0.98 }}
               whileHover={{ 
@@ -380,13 +404,14 @@ function Navbar({ active, onJump }: { active: SectionId; onJump: (id: SectionId)
         active={active} 
         onJump={onJump} 
         isOpen={mobileMenuOpen} 
-        onClose={() => setMobileMenuOpen(false)} 
+        onClose={() => setMobileMenuOpen(false)}
+        onResumeClick={onResumeClick}
       />
     </>
   )
 }
 
-function Hero() {
+function Hero({ onResumeClick }: { onResumeClick: () => void }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -485,8 +510,21 @@ function Hero() {
               View Projects
             </motion.a>
             <motion.a
-              ref={ghostMagnet as any}
               variants={fadeUp(16, 0.05)}
+              onClick={onResumeClick}
+              className="rounded-md border border-primary/50 bg-primary/10 px-5 py-3 text-sm font-medium text-foreground transition-all duration-200 cursor-pointer"
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: "0 0 28px 0 color-mix(in oklab, var(--color-primary) 25%, transparent)",
+                backgroundColor: "color-mix(in oklab, var(--color-primary) 15%, transparent)"
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Resume
+            </motion.a>
+            <motion.a
+              ref={ghostMagnet as any}
+              variants={fadeUp(16, 0.1)}
               href="#contact"
               onClick={(e) => {
                 e.preventDefault()
@@ -1420,8 +1458,77 @@ function ContinuousBackgroundAnimation() {
   )
 }
 
+function ResumeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          />
+          
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div className="relative w-full max-w-3xl h-[98vh] rounded-xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-border p-4">
+                <h2 className="text-lg font-semibold">Resume</h2>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onClose}
+                  className="rounded-md p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  aria-label="Close resume"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.button>
+              </div>
+              
+              {/* PDF Viewer */}
+              <div className="flex-1 overflow-auto">
+                <iframe
+                  src="/assets/M.Shahroz Butt CV.pdf"
+                  className="w-full h-full"
+                  title="Resume PDF"
+                />
+              </div>
+              
+              {/* Footer with Download Link */}
+              <div className="border-t border-border p-4 flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">View your resume</p>
+                <motion.a
+                  whileTap={{ scale: 0.98 }}
+                  href="/assets/M.Shahroz Butt CV.pdf"
+                  download
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all duration-200"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  Download
+                </motion.a>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export default function Page() {
   const { active, setActive } = useActiveSection(sections.map((s) => s.id as SectionId))
+  const [isResumeOpen, setIsResumeOpen] = React.useState(false)
 
   const onJump = (id: SectionId) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -1475,11 +1582,11 @@ export default function Page() {
       <BackgroundFX />
       
       {/* sticky nav with blur effect */}
-      <Navbar active={active} onJump={onJump} />
+      <Navbar active={active} onJump={onJump} onResumeClick={() => setIsResumeOpen(true)} />
 
       {/* Home */}
       <Section id="home" className="pt-8 sm:pt-10">
-        <Hero />
+        <Hero onResumeClick={() => setIsResumeOpen(true)} />
       </Section>
 
       {/* About */}
@@ -1507,6 +1614,9 @@ export default function Page() {
 
       {/* Floating scroll-to-top */}
       <ScrollTopFab />
+
+      {/* Resume Modal */}
+      <ResumeModal isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />
     </main>
   )
 }
