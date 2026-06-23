@@ -1313,7 +1313,7 @@ function Footer() {
         </div>
         <div className="order-1 flex items-center gap-4 md:order-2">
           <motion.a 
-            href="https://pk.linkedin.com/in/muhammad-shahroz-butt-4aa093309" 
+            href="https://www.linkedin.com/in/muhammad-shahroz-butt-5b7216419/" 
             className="hover:text-foreground transition-colors" 
             aria-label="LinkedIn" 
             target="_blank"
