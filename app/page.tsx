@@ -989,7 +989,7 @@ function Projects() {
       "A cross-platform news aggregation app using React Native and React, supporting iOS, Android, and Web. Implemented features including user authentication, personalized news feeds, search, admin dashboard with analytics, and real-time notifications. Used React Navigation, TypeScript, and native modules for Android (Kotlin) and iOS (Swift). Built a responsive web version with React Router and Vite. Integrated animations with React Native Reanimated and Lottie, and data visualization with React Native Chart Kit. Implemented dark/light theme support and optimized performance with code-splitting and lazy loading.",
       image: "/TRAK.png",
       tags: ["React Native", "React", "TypeScript", "Vite", "Kotlin", "JavaScript"],
-      link: "https://trak-fyp.netlify.app/",
+      link: "https://trak-flax.vercel.app/",
     },
     {
       title:"Pine-Tree House",
