@@ -613,17 +613,14 @@ function Hero({ onResumeClick }: { onResumeClick: () => void }) {
               {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/60 z-10" />
               
-              {/* Profile image with dark theme filters */}
+              {/* Profile image */}
               <motion.img
                 src="/img.png"
                 alt="Shahroz Butt portrait"
-                className="h-full w-full object-cover mix-blend-luminosity contrast-110 brightness-110 saturate-110"
+                className="h-full w-full object-cover"
                 initial={false}
-                whileHover={{ scale: 1.05, filter: "contrast(115%) brightness(115%) saturate(120%)" }}
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: "tween", duration: 0.6, ease: cubicBezier(0.22, 1, 0.36, 1) }}
-                style={{
-                  filter: "contrast(110%) brightness(110%) saturate(110%)",
-                }}
               />
               
               {/* Animated gradient border effect */}
