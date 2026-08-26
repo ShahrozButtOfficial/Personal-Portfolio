@@ -215,9 +215,9 @@ function MobileMenu({ active, onJump, isOpen, onClose, onResumeClick }: {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            className="fixed right-0 top-0 z-50 h-full w-64 border-l border-border bg-background/95 backdrop-blur-lg md:hidden"
+            className="fixed right-0 top-0 z-50 h-full w-64 border-l border-border bg-background/95 backdrop-blur-lg md:hidden "
           >
-            <div className="flex flex-col p-6">
+            <div className="flex flex-col p-6 ">
               <div className="mb-8 flex items-center justify-between">
                 <motion.button
                   whileTap={{ scale: 0.98 }}
@@ -225,7 +225,7 @@ function MobileMenu({ active, onJump, isOpen, onClose, onResumeClick }: {
                     onJump("home")
                     onClose()
                   }}
-                  className="flex items-center"
+                  className="flex items-center "
                   aria-label="Go to home"
                 >
                   <img src="/logo.png" alt="Logo" className="h-20 w-20" />
@@ -445,6 +445,7 @@ function Hero({ onResumeClick }: { onResumeClick: () => void }) {
             }}
           >
             <span className="inline-block rounded-full border border-border bg-secondary px-3 py-1 text-xs text-secondary-foreground">
+            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2" ></span>
               Available for work
             </span>
           </motion.div>
@@ -1582,7 +1583,7 @@ export default function Page() {
       <Navbar active={active} onJump={onJump} onResumeClick={() => setIsResumeOpen(true)} />
 
       {/* Home */}
-      <Section id="home" className="pt-8 sm:pt-10">
+      <Section id="home" className="pt-8 sm:pt-10 ">
         <Hero onResumeClick={() => setIsResumeOpen(true)} />
       </Section>
 
