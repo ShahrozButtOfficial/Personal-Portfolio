@@ -562,6 +562,8 @@ function Hero({ onResumeClick }: { onResumeClick: () => void }) {
                   {[
                     "TypeScript",
                     "React",
+                    "Angularv21",
+                    "Nest.js",
                     "Next.js",
                     "Tailwind",
                     "Framer Motion",
@@ -574,6 +576,7 @@ function Hero({ onResumeClick }: { onResumeClick: () => void }) {
                     "Docker",
                     "DynamoDB",
                     "CI/CD",
+                    "DevOps",
                   ].map((t) => (
                     <motion.span 
                       key={t} 
