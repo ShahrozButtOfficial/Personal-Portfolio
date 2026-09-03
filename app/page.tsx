@@ -1332,7 +1332,7 @@ function Footer() {
     <footer className="border-t border-border bg-card/50">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm text-muted-foreground sm:px-6 md:flex-row md:px-10 lg:px-16">
         <div className="order-2 text-center md:order-1 md:text-left">
-          © {new Date().getFullYear()} Shahroz Butt. All rights reserved.
+          © {new Date().getFullYear()} Stbdev. All rights reserved.
         </div>
         <div className="order-1 flex items-center gap-4 md:order-2">
           <motion.a 
