@@ -899,6 +899,25 @@ function Experience() {
         "Added search, save, and structured billing features for daily retail operations.",
       ],
     },
+    {
+      role: "Data Science Intern ",
+      org:"DevelopersHubCorporation",
+      period: "2026",
+      bullets: [
+        "Worked on data preprocessing, feature engineering, and exploratory data analysis (EDA) to extract insights.",
+        "Implemented machine learning models and evaluated their performance using metrics like accuracy, precision, and recall.",
+      ],
+    },
+    {
+      role: "Data Science Intern",
+      org: "Code Alpha",
+      period: "2026",
+      bullets: [
+        "Conducted data analysis and visualization to support business decision-making.",
+        "Collaborated with cross-functional teams to identify data needs and deliver insights.",
+        "Predicted trends and patterns using statistical models and machine learning algorithms.",
+      ],
+    }
   ]
 
   const ref = React.useRef<HTMLDivElement>(null)
