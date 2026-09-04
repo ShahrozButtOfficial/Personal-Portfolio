@@ -837,9 +837,17 @@ function About() {
 function Experience() {
   const items = [
     {
+      role:"Software Engineer",
+      org:"Systems Limited",
+      period:"2026",
+      bullets:[
+        
+      ]
+    },
+    {
       role: "Mobile & Web App Developer",
       org: "TRAK — Truth and Real-time Alert Keeper",
-      period: "2025–Present",
+      period: "2025-2026",
       bullets: [
         "Built a cross-platform news platform for Android, iOS, and Web using React Native, React, and TypeScript.",
         "Implemented authentication, personalized feeds, admin analytics, notifications, and performance optimizations.",
@@ -1047,7 +1055,7 @@ function Projects() {
       title: "Result Generator System",
       description:
         "This project implements a Vue.js-based form for student marks entry with features to dynamically generate a PDF report. The form allows users to input student details such as name, month, class, number of subjects, and corresponding marks. A table dynamically populates for marks entry based on the number of subjects, enabling seamless user interaction. The PDF generation leverages jsPDF and jspdf-autotable libraries to create a professional report that includes: Student details, Subject-wise marks breakdown, Total marks, Obtained marks, Percentage, A random remark based on the percentage, A section for a signature. The user interface is designed with Tailwind CSS for responsiveness and aesthetic appeal, ensuring usability and accessibility. This project combines modern front-end frameworks and libraries to streamline academic data management, offering scalability and customization for diverse educational applications.",
-      image: "",
+      image: "/resultgenerator.png",
       tags: ["vue", "ts", "tailwind"],
       link: "https://github.com/ShahrozButtOfficial/ResultGenerator/tree/master",
     },
