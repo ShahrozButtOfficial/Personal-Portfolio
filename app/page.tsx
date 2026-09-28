@@ -841,7 +841,9 @@ function Experience() {
       org:"Systems Limited",
       period:"2026-present",
       bullets:[
-        
+        "Rect/Vite",
+        "Azure",
+        "C#"
       ]
     },
     {
