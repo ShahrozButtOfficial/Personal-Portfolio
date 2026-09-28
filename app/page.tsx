@@ -574,6 +574,8 @@ function Hero({ onResumeClick }: { onResumeClick: () => void }) {
                     "Speech-to-Text",
                     "Transformers",
                     "Docker",
+                    "Vite",
+                    "Azure",
                     "DynamoDB",
                     "CI/CD",
                     "DevOps",
@@ -803,6 +805,10 @@ function About() {
           <div className="mt-2 flex flex-wrap gap-2">
             {[
               "TypeScript",
+              "Vite",
+              "Git",
+              "Azure",
+              "BitBucket",
               "React",
               "React Native",
               "Expo",
@@ -814,7 +820,6 @@ function About() {
               "MySQL",
               "MongoDB",
               "SQLite",
-              "Stripe",
               "Python",
               "Framer Motion",
             ].map((s) => (
